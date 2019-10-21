@@ -1,5 +1,6 @@
 package br.com.executorsonar.api.projeto;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import br.com.executorsonar.api.utils.Descompactador;
 
 @RestController
 @RequestMapping("/projeto")
@@ -32,9 +35,7 @@ public class ProjetoResources {
 			Path localizacaoArquivo = null;
 			try {
 
-				nome = anexo.getOriginalFilename();
-				localizacaoArquivo = Paths.get("C://Users//andre.graca//Desktop//anexos//" + nome);
-				anexo.transferTo(localizacaoArquivo);
+				localizacaoArquivo = salvaArquivoEmPastaLocal(anexo);
 			} catch (IllegalStateException | IOException e) {
 				e.printStackTrace();
 			}
@@ -47,10 +48,27 @@ public class ProjetoResources {
 
 	}
 
+	private Path salvaArquivoEmPastaLocal(MultipartFile anexo) throws IOException {
+		String nome = anexo.getOriginalFilename();
+		Path localizacaoArquivo;
+		
+		String pastaLocalOndeArquivosSeraoSalvos = "C://Users//"+System.getProperty("user.name")+"//Desktop//anexos//";
+		
+		if(!new File(pastaLocalOndeArquivosSeraoSalvos).exists()){
+			new File(pastaLocalOndeArquivosSeraoSalvos).mkdir();
+		}
+		localizacaoArquivo = Paths.get(pastaLocalOndeArquivosSeraoSalvos + nome);
+		anexo.transferTo(localizacaoArquivo);
+		Descompactador.unZipIt(localizacaoArquivo.toString(), pastaLocalOndeArquivosSeraoSalvos);
+		return localizacaoArquivo;
+	}
+
 	@PostMapping
 	public ResponseEntity<ProjetoEntity> salvarProjeto(@Valid @RequestBody ProjetoEntity projeto) {
 
 		ProjetoEntity projetoSalvo = projetoService.save(projeto);
+		
+		
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(projetoSalvo);
 	}

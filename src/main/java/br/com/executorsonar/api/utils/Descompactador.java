@@ -1,25 +1,26 @@
 package br.com.executorsonar.api.utils;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Descompactador {
 
 	public static void main(String[] args) {
-		unZipIt("C:\\Users\\andre.graca\\Desktop\\anexos\\api.zip", "C:\\Users\\andre.graca\\Desktop\\anexos\\");
+		unZipIt("C:/Users/ANDRE/Desktop/anexos/fontawesome-free-5.11.2-web.zip", "C:\\Users\\ANDRE\\Desktop\\anexos\\");
 	}
 
 	/**
 	 * Unzip it
 	 * 
-	 * @param zipFile input zip file
-	 * @param output  zip file output folder
+	 * @param zipFile
+	 *            input zip file
+	 * @param output
+	 *            zip file output folder
 	 */
 	public static void unZipIt(String zipFile, String outputFolder) {
 
@@ -45,18 +46,23 @@ public class Descompactador {
 
 				System.out.println("file unzip : " + newFile.getAbsoluteFile());
 
-				// create all non exists folders
-				// else you will hit FileNotFoundException for compressed folder
-				new File(newFile.getParent()).mkdirs();
+				if (newFile.isDirectory()) {
+					newFile.mkdir();
+				} else {
 
-				FileOutputStream fos = new FileOutputStream(newFile);
+					// create all non exists folders
+					// else you will hit FileNotFoundException for compressed
+					// folder
+					new File(newFile.getAbsoluteFile().getParent()).mkdirs();
+					FileOutputStream fos = new FileOutputStream(newFile.getAbsoluteFile());
 
-				int len;
-				while ((len = zis.read(buffer)) > 0) {
-					fos.write(buffer, 0, len);
+					int len;
+					while ((len = zis.read(buffer)) > 0) {
+						fos.write(buffer, 0, len);
+					}
+
+					fos.close();
 				}
-
-				fos.close();
 				ze = zis.getNextEntry();
 			}
 
@@ -65,7 +71,7 @@ public class Descompactador {
 
 			System.out.println("Done");
 
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
